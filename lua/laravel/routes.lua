@@ -44,7 +44,7 @@ foreach($routes as $route) {
 
   $qfixitems[] = array_merge(compact('lnum', 'text'), array(
     'filename' => $file,
-    'data' => $route,
+    'user_data' => $route,
   ));
 }
 
@@ -53,7 +53,7 @@ echo json_encode($qfixitems);
 
 ---Returns a list of routes
 ---@param name string? optional name to filter by
----@return vim.quickfix.entry
+---@return vim.quickfix.entry[]
 function M.list(name)
   local script = route_list_script:format(name ~= nil and string.format('%q', name) or 'null')
   local json   = ''
@@ -81,11 +81,38 @@ function M.list(name)
 end
 
 ---Set get routes from laravel and set the quickfix list
----@param name string?
 ---@return nil
-function M.setqflist(name)
-  vim.fn.setqflist({}, ' ', { title = string.format('Routes (%s)', name or 'all'), items = M.list(name) })
+function M.setqflist()
+  vim.fn.setqflist({}, ' ', { title = 'Routes (all)', items = M.list() })
   vim.cmd.cwin()
+end
+
+---Get a list of routes matching the given name
+---@param name string
+---@return nil
+function M.getselect(name)
+  local routes = M.list(name)
+
+  if #routes == 0 then return end
+  if #routes == 1 then
+    vim.cmd(string.format("edit +%d %s", routes[1].lnum, routes[1].filename))
+    return
+  end
+
+  vim.ui.select(
+    M.list(name),
+    {
+      ---@param item vim.quickfix.entry
+      format_item = function(item)
+        return string.format("%s\n\t%s\n\t%s: %d\n", item.text, item.user_data.action,
+          vim.fn.fnamemodify(item.filename, ':.'), item.lnum)
+      end
+    },
+    ---@param item vim.quickfix.entry?
+    function(item)
+      if item == nil then return end
+      vim.cmd(string.format("edit +%d %s", item.lnum, item.filename))
+    end)
 end
 
 return M

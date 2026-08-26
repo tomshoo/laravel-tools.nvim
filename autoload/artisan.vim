@@ -24,11 +24,14 @@ function! artisan#command(args, mods, range, line1, line2, ...) abort
       throw v:exception
     endtry
   elseif a:0 && a:1 is# 'route:clist'
-    if a:0 > 1
-      call v:lua.require'laravel.routes'.setqflist(s:expand_args(a:2))
-    else
-      call v:lua.require'laravel.routes'.setqflist()
+    call v:lua.require'laravel.routes'.setqflist()
+  elseif a:0 && a:1 is# 'route:cfind'
+    if a:0 < 2
+      echoerr "What should I find?"
+      return
     endif
+
+    call v:lua.require'laravel.routes'.getselect(s:expand_args(a:2))
   else
     exe a:mods . ' split +enew'
     call v:lua.require'laravel'.execute_artisan(a:args, #{term: v:true, pty: v:true})
