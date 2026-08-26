@@ -1,0 +1,8 @@
+:Artisan	doc/artisan.txt	/*:Artisan*
+:Artisan_route:cfind	doc/artisan.txt	/*:Artisan_route:cfind*
+:Artisan_route:clist	doc/artisan.txt	/*:Artisan_route:clist*
+:Artisan_tinker	doc/artisan.txt	/*:Artisan_tinker*
+g:laravel_tools_no_valet	doc/artisan.txt	/*g:laravel_tools_no_valet*
+laravel-global-vars	doc/artisan.txt	/*laravel-global-vars*
+laravel-tools.nvim	doc/artisan.txt	/*laravel-tools.nvim*
+laravel-tools.tsx	doc/artisan.txt	/*laravel-tools.tsx*

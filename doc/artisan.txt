@@ -1,0 +1,71 @@
+*laravel-tools.tsx* A wrapper around laravel's artisan command.
+
+Author: Shubhanshu Tomar <tomarshubhanshu@protonmail.ch>
+
+INTRODUCTION                                    *laravel-tools.nvim*
+
+This plugin defines a single |Artisan| command which wraps the projects
+artisan script. It automatically detects if valet is installed, if so the wrap
+the command using `valet php artisan` instead of simply running `php artisan`.
+This ensures that the correct php version is used if the project is using an
+isolated php version using `valet isolate` (More information about Laravel
+Valet at <https://laravel.com/framework/docs/13.x/valet>).
+
+COMMANDS                                        *:Artisan*
+
+:Artisan {args}            Runs an arbitrary artisan command in a split
+                           terminal buffer. You can change the direction of
+                           the split using |:command-modifiers|.
+
+
+                                                *:Artisan_route:clist*
+:Artisan route:clist [arg]
+                           Fetches available routes using `artisan route:list`
+                           and displays them inside a |quickfix| list.
+                           Optionally takes an argument, and filters routes by
+                           name as `artisan route:list --name=[arg]`.
+
+
+                                                *:Artisan_route:cfind*
+:Artisan route:cfind {arg}
+                           Same as |:Artisan_route:clist| but {arg} is
+                           required and uses |vim.ui.select()| instead of a
+                           quickfix list.
+
+                           If only one match was found the jumps to it
+                           immediately.
+
+
+                                                *:Artisan_tinker*
+:[range]Artisan[!] tinker [args]
+
+                           If no [args] are provided then create a new split
+                           buffer (Split direction respects
+                           |:command-modifiers|), where you can write any
+                           php script. Evaluates the buffer on save.
+
+                           If a treesitter parser for php is available then
+                           uses it to wrap the last expression statement of
+                           the script in a "dump();" call.
+
+                           If a range is provided then evaluate code within
+                           that range and show the output in a bottom split
+                           (This does not respect |:command-modifiers|).
+                           (Also note that this does require treesitter as of
+                           now, I might conjure up some hack later).
+
+                           If [args] and/or <bang> is provided then same as
+                           |:Artisan|.
+
+
+CONFIGURATION                                   *laravel-global-vars*
+
+This plugin is configured using global variables (of which at the moment there
+is ony one ;-b).
+
+                                                *g:laravel_tools_no_valet*
+
+g:laravel_tools_no_valet  Set this variable to 1 if for some reason you need to
+                          disable wrapping the command with `valet`.
+
+ vim:tw=78:ts=8:noet:ft=help:norl:
