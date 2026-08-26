@@ -80,10 +80,9 @@ local function tinker_output_buffer(opts)
   return output_buffer
 end
 
-local function tinker_initialize_repl(bufnr, artisan, valet)
+local function tinker_initialize_repl(bufnr)
   local out         = vim.api.nvim_buf_get_var(tinker_output_buffer(), "channel")
   local transformed = tinker_transform_treesitter(bufnr)
-  local cmdlist     = valet and { 'valet' } or {}
 
   if not transformed then
     return nil
@@ -94,7 +93,7 @@ local function tinker_initialize_repl(bufnr, artisan, valet)
   vim.api.nvim_set_option_value('busy', 1, { buf = bufnr })
   vim.api.nvim_chan_send(out, '\x1b[3J\x1b[2J\x1b[H')
 
-  vim.fn.jobstart(vim.list_extend(cmdlist, { "php", artisan, "tinker", "--execute", text }), {
+  require('laravel').execute_artisan({ "tinker", "--execute", text }, {
     stdout_buffered = true,
     pty = true,
     on_stdout = function(_, data)
@@ -108,13 +107,6 @@ local function tinker_initialize_repl(bufnr, artisan, valet)
 end
 
 local function tinker_handle()
-  local found = vim.fs.find("artisan", { path = vim.fn.getcwd(), upward = true, limit = 1 })
-  local valet = vim.fn.executable('valet') == 1
-
-  if #found == 0 then
-    error("Path for artisan could not be found, please make sure you are in a laravel project.")
-  end
-
   local tinker_file  = tostring(vim.fn.rand()) .. ".tinker.php"
   local input_buffer = vim.api.nvim_create_buf(false, false)
   local tinker_group = vim.api.nvim_create_augroup("plugins#tinker#repl", { clear = true })
@@ -127,7 +119,7 @@ local function tinker_handle()
     group = tinker_group,
     buffer = input_buffer,
     callback = function(args)
-      tinker_initialize_repl(args.buf, found[1], valet)
+      tinker_initialize_repl(args.buf)
     end
   })
 
@@ -158,13 +150,6 @@ local function tinker_extract_imports(bufnr)
 end
 
 local function tinker_handle_range(buf, line1, line2)
-  local found = vim.fs.find("artisan", { path = vim.fn.getcwd(), upward = true, limit = 1 })
-  local valet = vim.fn.executable('valet') == 1
-
-  if #found == 0 then
-    error("Path for artisan could not be found, please make sure you are in a laravel project.")
-  end
-
   local imports     = tinker_extract_imports(buf)
   local out_buffer  = tinker_output_buffer({ winheight = vim.o.cmdwinheight })
   local out_channel = vim.api.nvim_buf_get_var(out_buffer, "channel")
@@ -172,11 +157,9 @@ local function tinker_handle_range(buf, line1, line2)
   local lines       = vim.api.nvim_buf_get_lines(buf, line1 - 1, line2, false)
   local text        = table.concat(vim.list_extend(imports, lines), "\n")
 
-  local cmdlist     = valet and { 'valet' } or {}
-
   vim.api.nvim_set_option_value('busy', 1, { buf = buf })
 
-  vim.fn.jobstart(vim.list_extend(cmdlist, { "php", found[1], "tinker", "--execute", text }), {
+  require('laravel').execute_artisan({ 'tinker', '--execute', text }, {
     stdout_buffered = true,
     pty = true,
     on_stdout = function(_, data)
