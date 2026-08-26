@@ -36,6 +36,10 @@ vim.pack.add {
 Plug 'tomshoo/laravel-tools.nvim'
 ```
 
+## VERSIONING
+There is no specific versioning for this plugin. If you want you can pin to the most recent stable commit. Apart from
+that I'll try to keep the master branch as stable as possible.
+
 ## CONTRIBUTING
 
 This plugin is a fully handcrafted product. I do not like to use AI, but if you have something that you might want in
