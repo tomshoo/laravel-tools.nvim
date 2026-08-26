@@ -1,4 +1,4 @@
-*laravel-tools.tsx* A wrapper around laravel's artisan command.
+*artisan.txt* A wrapper around laravel's artisan command.
 
 Author: Shubhanshu Tomar <tomarshubhanshu@protonmail.ch>
 
