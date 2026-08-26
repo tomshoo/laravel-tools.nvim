@@ -30,6 +30,7 @@ function! artisan#command(args, mods, range, line1, line2, ...) abort
       call v:lua.require'laravel.routes'.setqflist()
     endif
   else
-    exe a:mods . ' split' | call v:lua.require'laravel'.execute_artisan(a:args, #{term: v:true, pty: v:true})
+    exe a:mods . ' split +enew'
+    call v:lua.require'laravel'.execute_artisan(a:args, #{term: v:true, pty: v:true})
   endif
 endfunction
