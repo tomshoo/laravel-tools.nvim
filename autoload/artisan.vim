@@ -8,8 +8,8 @@ function! s:expand_args(args) abort
   return l:string
 endfunction
 
-function! artisan#command(args, mods, range, line1, line2, ...) abort
-  if a:0 && a:1 is# 'tinker'
+function! artisan#command(args, mods, range, line1, line2, bang, ...) abort
+  if a:0 && a:1 is# 'tinker' && !a:bang
     try
       if a:range
         call v:lua.require'laravel.tinker'.handle_range(0, a:line1, a:line2)
