@@ -81,9 +81,10 @@ function M.list(name)
 end
 
 ---Set get routes from laravel and set the quickfix list
+---@param name string?
 ---@return nil
-function M.setqflist()
-  vim.fn.setqflist({}, ' ', { title = 'Routes (all)', items = M.list() })
+function M.setqflist(name)
+  vim.fn.setqflist({}, ' ', { title = string.format('Routes (%s)', name or 'all'), items = M.list(name) })
   vim.cmd.cwin()
 end
 

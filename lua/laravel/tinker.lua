@@ -34,10 +34,16 @@ local function transform(statements)
 end
 
 local function tinker_transform_treesitter(bufnr)
-  local query     = vim.treesitter.query.parse("php", "(program (expression_statement) @stmt .)")
-  local parser    = assert(vim.treesitter.get_parser(bufnr, "php"), "Failed to get parser for php")
-  local tree      = parser:parse()[1]
-  local root      = tree:root()
+  local parser = vim.treesitter.get_parser(bufnr, "php")
+
+  if parser == nil then
+    return vim.api.nvim_buf_get_lines(bufnr, 1, -1, false)
+  end
+
+  local query = vim.treesitter.query.parse("php", "(program (expression_statement) @stmt .)")
+  local tree  = parser:parse()[1]
+  local root  = tree:root()
+
 
   --- @type TSNode?
   local last_node = vim.iter(query:iter_captures(root, bufnr, 0, -1))
@@ -116,8 +122,6 @@ local function tinker_handle()
   vim.api.nvim_buf_set_name(input_buffer, tinker_file)
   vim.api.nvim_win_set_buf(0, input_buffer)
   vim.api.nvim_set_option_value("filetype", "php", { buf = input_buffer })
-  vim.api.nvim_buf_set_var(input_buffer, "disable_formatting", 1)
-
 
   vim.api.nvim_create_autocmd("BufWritePost", {
     group = tinker_group,

@@ -24,7 +24,11 @@ function! artisan#command(args, mods, range, line1, line2, bang, ...) abort
       throw v:exception
     endtry
   elseif a:0 && a:1 is# 'route:clist'
-    call v:lua.require'laravel.routes'.setqflist()
+    if a:0 < 2
+      call v:lua.require'laravel.routes'.setqflist()
+    else
+      call v:lua.require'laravel.routes'.setqflist(s:expand_args(a:2))
+    endif
   elseif a:0 && a:1 is# 'route:cfind'
     if a:0 < 2
       echoerr "What should I find?"
