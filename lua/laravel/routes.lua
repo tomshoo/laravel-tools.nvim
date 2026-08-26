@@ -106,7 +106,19 @@ function M.getselect(name)
       format_item = function(item)
         return string.format("%s\n\t%s\n\t%s: %d\n", item.text, item.user_data.action,
           vim.fn.fnamemodify(item.filename, ':.'), item.lnum)
-      end
+      end,
+
+      ---@param item vim.quickfix.entry
+      preview_item = function(item)
+        local buf = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.fn.readfile(item.filename))
+
+        vim.echoe(tostring(buf))
+
+        return { buf = buf, pos = { item.lnum, 0 } }
+      end,
+
+      prompt = "Where to go?"
     },
     ---@param item vim.quickfix.entry?
     function(item)
