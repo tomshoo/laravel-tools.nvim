@@ -15,7 +15,7 @@ foreach($routes as $route) {
   if ($route->path !== null) {
     preg_match('/(.*):(\d+)/', $route->path, $matches);
     $file = $matches[1];
-    $lnum = $matches[1];
+    $lnum = $matches[2];
   } else {
     $fragments = explode('@', $route->action, 2);
     if (! isset($fragments[1])) {
@@ -101,7 +101,7 @@ function M.getselect(name)
   end
 
   vim.ui.select(
-    M.list(name),
+    routes,
     {
       ---@param item vim.quickfix.entry
       format_item = function(item)
