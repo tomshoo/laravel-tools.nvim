@@ -59,7 +59,7 @@ function M.list(name)
   local json   = ''
   local items  = {}
 
-  local pid    = require('laravel').execute_artisan({ 'tinker', '--execute', script }, {
+  local pid    = vim.call('artisan#execute', { 'tinker', '--execute', script }, {
     stdout_buffered = false,
     on_stdout = function(_, out)
       json = json .. table.concat(out, '')
@@ -105,7 +105,7 @@ function M.getselect(name)
     {
       ---@param item vim.quickfix.entry
       format_item = function(item)
-        return string.format("%s\n\t%s\n\t%s: %d\n", item.text, item.user_data.action,
+        return string.format("%s\t%s\n\t\t%s:%d\n", item.user_data.name, item.user_data.action,
           vim.fn.fnamemodify(item.filename, ':.'), item.lnum)
       end,
 
@@ -114,18 +114,47 @@ function M.getselect(name)
         local buf = vim.api.nvim_create_buf(false, true)
         vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.fn.readfile(item.filename))
 
-        vim.echoe(tostring(buf))
-
         return { buf = buf, pos = { item.lnum, 0 } }
       end,
 
-      prompt = "Where to go?"
+      prompt = "Select route:"
     },
     ---@param item vim.quickfix.entry?
     function(item)
       if item == nil then return end
       vim.cmd(string.format("edit +%d %s", item.lnum, item.filename))
     end)
+end
+
+function M.ctags(tagspath)
+  local routes = M.list()
+  local tags   = {}
+
+  for _, route in ipairs(routes) do
+    if route.user_data.name ~= vim.NIL then
+      table.insert(tags,
+        string.format("%s\t%s\tkeepjumps norm! %dgg^\n", route.user_data.name, route.filename, route.lnum))
+    end
+  end
+
+  local fulltagpath = vim.fn.fnamemodify(tagspath
+    or vim.g.laravel_tools_route_tags_file
+    or vim.fs.joinpath(vim.fn.getcwd() or 'tags'), ':p')
+
+  local tagsdir = vim.fn.fnamemodify(fulltagpath, ':h')
+
+  if vim.fn.isdirectory(tagsdir) == 0 then
+    vim.fn.mkdir(tagsdir, 'p')
+  end
+
+  local tagsfile = io.open(fulltagpath, 'w+')
+
+  if tagsfile == nil then
+    error(string.format("Could not open %s", fulltagpath))
+  end
+
+  tagsfile:write(table.unpack(tags))
+  tagsfile:close()
 end
 
 return M

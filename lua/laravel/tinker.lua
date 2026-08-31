@@ -93,7 +93,7 @@ local function tinker_initialize_repl(bufnr)
   vim.api.nvim_set_option_value('busy', 1, { buf = bufnr })
   vim.api.nvim_chan_send(out, '\x1b[3J\x1b[2J\x1b[H')
 
-  require('laravel').execute_artisan({ "tinker", "--execute", text }, {
+  vim.call('artisan#execute', { "tinker", "--execute", text }, {
     stdout_buffered = true,
     pty = true,
     on_stdout = function(_, data)
@@ -159,7 +159,7 @@ local function tinker_handle_range(buf, line1, line2)
 
   vim.api.nvim_set_option_value('busy', 1, { buf = buf })
 
-  require('laravel').execute_artisan({ 'tinker', '--execute', text }, {
+  vim.call('artisan#execute', { 'tinker', '--execute', text }, {
     stdout_buffered = true,
     pty = true,
     on_stdout = function(_, data)

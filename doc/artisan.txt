@@ -39,6 +39,26 @@ COMMANDS                                        *:Artisan*
                            If only one match was found the jumps to it
                            immediately.
 
+                                                *:Artisan_route:ctags*
+:Artisan route:ctags [arg]
+
+                           Generate a tags file to navigate to routes, much
+                           faster than |:Artisan_route:clist| or
+                           |:Artisan_route:cfind| but you need to regenerate
+                           tags every time you add a new route.
+
+                           (Added this because forking to php everytime I need
+                           to jump to a route was getting slow on my M1 work
+                           mac).
+
+                           If provided use [arg] as the filepath to write the
+                           tags, otherwise use |g:laravel_tools_route_tags_file|
+                           if provided. Fallsback to "./tags" relative to
+                           |getcwd()|.
+
+                           NOTE: This command replaces the contents of the
+                           tags file.
+
 
                                                 *:Artisan_tinker*
 :[range]Artisan[!] tinker [args]
@@ -64,12 +84,14 @@ COMMANDS                                        *:Artisan*
 
 CONFIGURATION                                   *laravel-global-vars*
 
-This plugin is configured using global variables (of which at the moment there
-is ony one ;-b).
+This plugin is configured using global variables.
 
                                                 *g:laravel_tools_no_valet*
 
-g:laravel_tools_no_valet  Set this variable to 1 if for some reason you need to
-                          disable wrapping the command with `valet`.
+g:laravel_tools_no_valet        Set this variable to 1 if for some reason you
+                                need to disable wrapping the command with `valet`.
+
+g:laravel_tools_route_tags_file Set this variable to the path fo tags file you
+                                you want to write to.
 
  vim:tw=78:ts=8:noet:ft=help:norl:
