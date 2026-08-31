@@ -126,6 +126,8 @@ function M.getselect(name)
     end)
 end
 
+---Generates a tag file for laravel routes
+---@param tagspath string? optional filepath to write to
 function M.ctags(tagspath)
   local routes = M.list()
   local tags   = {}
