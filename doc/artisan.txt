@@ -91,6 +91,8 @@ This plugin is configured using global variables.
 g:laravel_tools_no_valet        Set this variable to 1 if for some reason you
                                 need to disable wrapping the command with `valet`.
 
+                                                *g:laravel_tools_route_tags_file*
+
 g:laravel_tools_route_tags_file Set this variable to the path fo tags file you
                                 you want to write to.
 

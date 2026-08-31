@@ -36,6 +36,12 @@ function! artisan#command(args, mods, range, line1, line2, bang, ...) abort
     endif
 
     call v:lua.require'laravel.routes'.getselect(s:expand_args(a:2))
+  elseif a:0 && a:1 is# 'route:ctags'
+    if a:0 < 2
+      call v:lua.require'laravel.routes'.ctags()
+    else
+      call v:lua.require'laravel.routes'.ctags(a:2)
+    endif
   else
     exe a:mods . ' split +enew'
     call artisan#execute(a:args, #{term: v:true, pty: v:true})
