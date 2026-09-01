@@ -26,6 +26,9 @@ foreach($routes as $route) {
       $m = new \ReflectionMethod($fragments[0], $fragments[1]);
       $file = $m->getFileName();
       $lnum = $m->getStartLine();
+
+      $route->class_name  = class_basename($fragments[0]);
+      $route->method_name = $fragments[1];
     } catch (\ReflectionException $e) {
       continue;
     }
@@ -129,19 +132,30 @@ end
 ---Generates a tag file for laravel routes
 ---@param tagspath string? optional filepath to write to
 function M.ctags(tagspath)
-  local routes = M.list()
-  local tags   = {}
+  ---@type string[]
+  local tags = vim.iter(M.list())
+      :filter(function(item)
+        return item.user_data.name ~= vim.NIL
+      end)
+      :map(function(r)
+        if r.user_data.class_name == nil or r.user_data.method_name == nil then
+          return string.format("%s\t%s\t%d\n", r.user_data.name, r.filename, r.lnum)
+        end
 
-  for _, route in ipairs(routes) do
-    if route.user_data.name ~= vim.NIL then
-      table.insert(tags,
-        string.format("%s\t%s\tkeepjumps norm! %dgg^\n", route.user_data.name, route.filename, route.lnum))
-    end
-  end
+        return string.format("%s\t%s\t%d;/public function %s/;\"\tclass:%s\n", r.user_data.name,
+          vim.fn.fnamemodify(r.filename, ':.'), r.lnum, r.user_data.method_name, r.user_data.class_name)
+      end)
+      :totable()
+
+  table.sort(tags, function(a, b)
+    return a:upper() < b:upper()
+  end)
+
+  tags = vim.list_extend({ "!_TAG_FILE_SORTED\t1\n" }, tags)
 
   local fulltagpath = vim.fn.fnamemodify(tagspath
     or vim.g.laravel_tools_route_tags_file
-    or vim.fs.joinpath(vim.fn.getcwd() or 'tags'), ':p')
+    or vim.fs.joinpath(vim.fn.getcwd(), 'tags'), ':p')
 
   local tagsdir = vim.fn.fnamemodify(fulltagpath, ':h')
 
