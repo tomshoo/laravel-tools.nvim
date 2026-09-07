@@ -1,4 +1,4 @@
-command! -bang -range=0 -nargs=+
+command! -bang -range=0 -nargs=+ -complete=customlist,artisan#complete
             \ Artisan call artisan#command(<q-args>, <q-mods>, <range>, <line1>, <line2>, <bang>0, <f-args>)
 
 noremap <silent> <Plug>(route-handler-under-cursor) <cmd>Artisan route:cfind <cfile><cr>

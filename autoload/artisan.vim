@@ -1,11 +1,29 @@
 " vim:set tabstop=2 shiftwidth=2:
 
+let s:artisan_completion_stdout = ''
+let s:loaded_completion_list = 0
+let s:artisan_commands = [
+      \ 'route:clist',
+      \ 'route:cfind',
+      \ 'route:ctags',
+      \ ]
+
 function! s:expand_args(args) abort
   let l:string = a:args
   let l:string = substitute(l:string, '%\%(:.\)*', '\=expand(submatch(0))', 'g')
   let l:string = substitute(l:string, '\(<\%(cfile\|afile\|abuf\|amatch\|cexpr\|sfile\|slnum\|sflnum\|SID\|script\|stack\|cword\|cWORD\|client\)>\)', '\=expand(submatch(0))', 'g')
 
   return l:string
+endfunction
+
+function! s:acquire_completion_stdout(j, d, e) abort
+  let s:artisan_completion_stdout ..= join(a:d, '')
+endfunction
+
+function! s:parse_stdout(...) abort
+  let commands = json_decode(s:artisan_completion_stdout).commands->map('v:val.name')
+
+  let s:artisan_commands += commands
 endfunction
 
 function! artisan#command(args, mods, range, line1, line2, bang, ...) abort
@@ -67,4 +85,18 @@ function! artisan#execute(cmd, opts) abort
   endif
 
   return jobstart(l:cmd, a:opts)
+endfunction
+
+function! artisan#complete(lead, cmdline, pos) abort
+  if ! s:loaded_completion_list
+    let pid = artisan#execute(['list', '--short', '--format=json'], #{
+          \ on_stdout: function('<SID>acquire_completion_stdout'),
+          \ on_exit:   function('<SID>parse_stdout')
+          \ })
+
+    call jobwait([pid])
+    let s:loaded_completion_list = 1
+  endif
+
+  return matchfuzzy(s:artisan_commands, a:lead)
 endfunction
