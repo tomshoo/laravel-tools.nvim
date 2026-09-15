@@ -1,6 +1,7 @@
 local dump_var = "$tinkerGeneratedVariableDoNotUseOtherwiseEverythingBreaks_thisIsStrictlyForInternalUse"
 
-local output_buffer = nil
+---@type integer?
+local output_buf = nil
 
 local function is_not_dumped(line)
   return not vim.startswith(line, "echo")
@@ -63,21 +64,13 @@ local function tinker_transform_treesitter(bufnr)
   return vim.list_extend(lines, transform(statements))
 end
 
-local function tinker_output_buffer(opts)
-  if output_buffer == nil then
-    output_buffer = vim.api.nvim_create_buf(false, false)
-    vim.api.nvim_buf_set_var(output_buffer, "channel", vim.api.nvim_open_term(output_buffer, {}))
+local function tinker_output_buffer()
+  if output_buf == nil then
+    output_buf = vim.api.nvim_create_buf(false, false)
+    vim.api.nvim_buf_set_var(output_buf, "channel", vim.api.nvim_open_term(output_buf, {}))
   end
 
-  local found = vim.iter(vim.api.nvim_tabpage_list_wins(0)):any(function(win)
-    return vim.api.nvim_win_get_buf(win) == output_buffer
-  end)
-
-  if not found then
-    vim.api.nvim_open_win(output_buffer, false, { split = "below", height = (opts and opts.winheight) or 20 })
-  end
-
-  return output_buffer
+  return output_buf
 end
 
 local function tinker_initialize_repl(bufnr)
@@ -93,10 +86,16 @@ local function tinker_initialize_repl(bufnr)
   vim.api.nvim_set_option_value('busy', 1, { buf = bufnr })
   vim.api.nvim_chan_send(out, '\x1b[3J\x1b[2J\x1b[H')
 
-  vim.call('artisan#execute', { "tinker", "--execute", text }, {
+  local ok, err = pcall(vim.call, 'artisan#execute', { "tinker", "--execute", text }, {
     stdout_buffered = true,
     pty = true,
     on_stdout = function(_, data)
+      ---@diagnostic disable
+      if #vim.fn.win_findbuf(output_buf) == 0 then
+        vim.api.nvim_open_win(output_buf, false, { split = "below", height = (opts and opts.winheight) or 20 })
+      end
+      ---@diagnostic enable
+
       vim.fn.chansend(out, data)
     end,
     on_exit = function()
@@ -104,6 +103,10 @@ local function tinker_initialize_repl(bufnr)
       vim.fn.chansend(out, "")
     end
   })
+
+  if not ok then
+    vim.api.nvim_echo({ { err } }, true, { err = true, kind = "error" })
+  end
 end
 
 local function tinker_handle()
@@ -127,9 +130,9 @@ local function tinker_handle()
     group = tinker_group,
     buffer = input_buffer,
     callback = function()
-      if output_buffer ~= nil and vim.api.nvim_buf_is_valid(output_buffer) then
-        vim.api.nvim_buf_delete(output_buffer, { force = true })
-        output_buffer = nil
+      if output_buf ~= nil and vim.api.nvim_buf_is_valid(output_buf) then
+        vim.api.nvim_buf_delete(output_buf, { force = true })
+        output_buf = nil
       end
 
       vim.fs.rm(tinker_file, { force = true })
@@ -151,7 +154,7 @@ end
 
 local function tinker_handle_range(buf, line1, line2)
   local imports     = tinker_extract_imports(buf)
-  local out_buffer  = tinker_output_buffer({ winheight = vim.o.cmdwinheight })
+  local out_buffer  = tinker_output_buffer()
   local out_channel = vim.api.nvim_buf_get_var(out_buffer, "channel")
 
   local lines       = vim.api.nvim_buf_get_lines(buf, line1 - 1, line2, false)
@@ -159,10 +162,14 @@ local function tinker_handle_range(buf, line1, line2)
 
   vim.api.nvim_set_option_value('busy', 1, { buf = buf })
 
-  vim.call('artisan#execute', { 'tinker', '--execute', text }, {
+  local ok, err = pcall(vim.call, 'artisan#execute', { 'tinker', '--execute', text }, {
     stdout_buffered = true,
     pty = true,
     on_stdout = function(_, data)
+      if #vim.fn.win_findbuf(out_buffer) == 0 then
+        vim.api.nvim_open_win(out_buffer, false, { split = "below", height = 20 })
+      end
+
       vim.fn.chansend(out_channel, data)
     end,
     on_exit = function()
@@ -171,11 +178,15 @@ local function tinker_handle_range(buf, line1, line2)
     end
   })
 
+  if not ok then
+    vim.api.nvim_echo({ { err } }, true, { err = true, kind = "error" })
+  end
+
   vim.api.nvim_create_autocmd("BufWinLeave", {
     group    = vim.api.nvim_create_augroup("plugins#tinker#range-repl", { clear = true }),
     buffer   = out_buffer,
     callback = function()
-      output_buffer = nil
+      output_buf = nil
     end
   })
 end
