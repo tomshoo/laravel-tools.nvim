@@ -49,7 +49,7 @@ function! artisan#command(args, mods, range, line1, line2, bang, ...) abort
     endif
   elseif a:0 && a:1 is# 'route:cfind'
     if a:0 < 2
-      echoerr "What should I find?"
+      echohl WarningMsg | echo "WARN: What should I find?" | echohl None
       return
     endif
 
