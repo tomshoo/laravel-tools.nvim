@@ -37,9 +37,9 @@ function! artisan#command(args, mods, range, line1, line2, bang, ...) abort
 
         call v:lua.require'laravel.tinker'.handle()
       endif
-    catch /^Vim\%((\S\+)\)\=:E5108:/
+    catch /E5108:/
       bdelete
-      throw v:exception
+      echohl ErrorMsg | echo v:exception | echohl None
     endtry
   elseif a:0 && a:1 is# 'route:clist'
     if a:0 < 2
@@ -49,7 +49,7 @@ function! artisan#command(args, mods, range, line1, line2, bang, ...) abort
     endif
   elseif a:0 && a:1 is# 'route:cfind'
     if a:0 < 2
-      echoerr "What should I find?"
+      echohl WarningMsg | echo "WARN: What should I find?" | echohl None
       return
     endif
 
@@ -61,8 +61,12 @@ function! artisan#command(args, mods, range, line1, line2, bang, ...) abort
       call v:lua.require'laravel.routes'.ctags(a:2)
     endif
   else
-    exe a:mods . ' split +enew'
-    call artisan#execute(a:args, #{term: v:true, pty: v:true})
+    try
+      exe a:mods . ' split +enew'
+      call artisan#execute(a:args, #{term: v:true, pty: v:true})
+    catch
+      echohl ErrorMsg | echo v:exception | echohl None
+    endtry
   endif
 endfunction
 
@@ -71,8 +75,7 @@ function! artisan#execute(cmd, opts) abort
   let l:artisan = findfile('artisan', '.;')
 
   if l:artisan is# ''
-    echoerr "Could not find artisan in path"
-    return
+    throw "artisan#execute: Could not find artisan in path"
   endif
 
   let l:islist =  type(a:cmd) == v:t_list
