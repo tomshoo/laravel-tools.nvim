@@ -3,8 +3,11 @@
 :Artisan_route:clist	artisan.txt	/*:Artisan_route:clist*
 :Artisan_route:ctags	artisan.txt	/*:Artisan_route:ctags*
 :Artisan_tinker	artisan.txt	/*:Artisan_tinker*
+LaravelToolsTinkerPost	artisan.txt	/*LaravelToolsTinkerPost*
+LaravelToolsTinkerPre	artisan.txt	/*LaravelToolsTinkerPre*
 artisan.txt	artisan.txt	/*artisan.txt*
 g:laravel_tools_no_valet	artisan.txt	/*g:laravel_tools_no_valet*
 g:laravel_tools_route_tags_file	artisan.txt	/*g:laravel_tools_route_tags_file*
+laravel-autocmds	artisan.txt	/*laravel-autocmds*
 laravel-global-vars	artisan.txt	/*laravel-global-vars*
 laravel-tools.nvim	artisan.txt	/*laravel-tools.nvim*
