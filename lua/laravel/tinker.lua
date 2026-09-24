@@ -83,7 +83,7 @@ local function tinker_initialize_repl(bufnr)
 
   local text = table.concat(transformed, "\n")
 
-  vim.api.nvim_set_option_value('busy', 1, { buf = bufnr })
+  vim.api.nvim_exec_autocmds('User', { pattern = 'LaravelToolsTinkerPre', modeline = true })
   vim.api.nvim_chan_send(out, '\x1b[3J\x1b[2J\x1b[H')
 
   local ok, err = pcall(vim.call, 'artisan#execute', { "tinker", "--execute", text }, {
@@ -99,7 +99,7 @@ local function tinker_initialize_repl(bufnr)
       vim.fn.chansend(out, data)
     end,
     on_exit = function()
-      vim.api.nvim_set_option_value('busy', 0, { buf = bufnr })
+      vim.api.nvim_exec_autocmds('User', { pattern = 'LaravelToolsTinkerPost', modeline = true })
       vim.fn.chansend(out, "")
     end
   })
@@ -160,7 +160,7 @@ local function tinker_handle_range(buf, line1, line2)
   local lines       = vim.api.nvim_buf_get_lines(buf, line1 - 1, line2, false)
   local text        = table.concat(vim.list_extend(imports, lines), "\n")
 
-  vim.api.nvim_set_option_value('busy', 1, { buf = buf })
+  vim.api.nvim_exec_autocmds('User', { pattern = 'LaravelToolsTinkerPre', modeline = true })
 
   local ok, err = pcall(vim.call, 'artisan#execute', { 'tinker', '--execute', text }, {
     stdout_buffered = true,
@@ -174,7 +174,7 @@ local function tinker_handle_range(buf, line1, line2)
     end,
     on_exit = function()
       vim.fn.chansend(out_channel, "")
-      vim.api.nvim_set_option_value('busy', 0, { buf = buf })
+      vim.api.nvim_exec_autocmds('User', { pattern = 'LaravelToolsTinkerPost', modeline = true })
     end
   })
 
